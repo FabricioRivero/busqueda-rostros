@@ -1,0 +1,31 @@
+name: busqueda-rostros
+
+services:
+  bd-chroma:
+    image: chromadb/chroma:0.6.3
+    container_name: bd-chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    volumes:
+      - chroma-data:/chroma/chroma
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  app-reconocimiento-facial:
+    build: ./app
+    container_name: app-reconocimiento-facial
+    environment:
+      - CHROMA_HOST=bd-chroma
+      - CHROMA_PORT=8000
+      - CHROMA_COLECCION=rostros
+      - UMBRAL_SIMILITUD=0.55
+    ports:
+      - "8081:8080"
+    depends_on:
+      - bd-chroma
+    restart: unless-stopped
+
+volumes:
+  chroma-data:
